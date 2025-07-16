@@ -1,4 +1,4 @@
-# Smart Quadruped Robot
+# Voice-activated-four-legged-robot
 
 *ESP32-S3 powered voice-controlled quadruped robot with AI interaction*
 
