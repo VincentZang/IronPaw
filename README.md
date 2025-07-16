@@ -185,7 +185,7 @@ void addLog(String message) {
 ```
 
 ## Code Structure
-Key components in `Main.ino`:
+Key components in `MainCodeChineseVersion.ino` and `MainCodeEnglishVersion.ino`:
 ```cpp
 void setup() {
   setCpuFrequencyMhz(240);
