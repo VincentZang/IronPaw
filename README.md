@@ -120,7 +120,7 @@ The system prioritizes low-latency audio processing and responsive motion contro
 ### Serial Debugging
 Access via 115200 baud serial monitor:
 
-
+'''
 void handleSerialCommands() {
   if(Serial.available()) {
     String command = Serial.readStringUntil('\n');
@@ -182,11 +182,10 @@ void addLog(String message) {
   systemLog += "[" + timestamp + "] " + message + "\n";
   Serial.println("[" + timestamp + "] " + message);
 }
-
+'''
 ## Code Structure
 Key components in `Main.ino`:
-
-
+'''
 void setup() {
   setCpuFrequencyMhz(240);
   Serial.begin(115200);
@@ -239,6 +238,7 @@ void trotGait(int direction, float speed) {
   }
   addLog("Gait completed");
 }
+'''
 
 ## Contributing
 1. Fork the repository
