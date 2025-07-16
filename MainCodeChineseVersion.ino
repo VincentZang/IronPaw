@@ -17,11 +17,11 @@
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x70);
 
 // 配置参数
-const char* ssid = "MewGulf";
-const char* password = "lxnzwjpn";
-const char* deepseekApiKey = "sk-445f67151a4e460e9a7d80f7ed2803d7";
-const char* baiduApiKey = "FJctXqWsLOk72hvme5iK7PhD";
-const char* baiduSecretKey = "VYxgtwNL5eVVl9yxpppnO2RWBxHOY24H";
+const char* ssid = "输入您的WIFI名称";
+const char* password = "输入您的WIFI密码";
+const char* deepseekApiKey = "输入您的Deepseek API Key";
+const char* baiduApiKey = "输入您的百度API Key";
+const char* baiduSecretKey = "输入您的百度Secret Key";
 
 // 全局变量
 static uint8_t *recordBuffer = nullptr;   // 新增预分配录音缓冲区
