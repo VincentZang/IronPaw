@@ -120,7 +120,7 @@ The system prioritizes low-latency audio processing and responsive motion contro
 ### Serial Debugging
 Access via 115200 baud serial monitor:
 
-// Handle serial commands
+
 void handleSerialCommands() {
   if(Serial.available()) {
     String command = Serial.readStringUntil('\n');
@@ -177,8 +177,6 @@ void handleSerialCommands() {
     }
   }
 }
-
-// Helper function to add log entries
 void addLog(String message) {
   String timestamp = getFormattedTime();
   systemLog += "[" + timestamp + "] " + message + "\n";
@@ -188,19 +186,12 @@ void addLog(String message) {
 ## Code Structure
 Key components in `Main.ino`:
 
-// Initialization
+
 void setup() {
-  // Set CPU frequency
   setCpuFrequencyMhz(240);
-  
-  // Initialize serial communication
   Serial.begin(115200);
   while(!Serial) delay(10);
-  
-  // Create I2S mutex
   i2sMutex = xSemaphoreCreateMutex();
-  
-  // Initialize file system
   if(!SPIFFS.begin(true)) {
     addLog("SPIFFS initialization failed!");
     // Attempt repair
@@ -210,26 +201,17 @@ void setup() {
       while(1);
     }
   }
-  
-  // Initialize hardware
   setupServos();
   initializeSystem();
-  
-  // Start memory monitor task
   xTaskCreatePinnedToCore(memoryMonitorTask, "MemoryMonitor", 3000, nullptr, 1, nullptr, 0);
 }
 
-// Main loop
 void loop() {
   handleSerialCommands();
-  
-  // Check wake button
   if(isReady && !isProcessing && digitalRead(wakeButtonPin) == LOW) {
     wakeUpAssistant();
     delay(300); // Debounce
   }
-  
-  // WiFi reconnect mechanism
   if(WiFi.status() != WL_CONNECTED) {
     if(millis() - wifiConnectStartTime > 30000) {
       addLog("WiFi disconnected, attempting reconnect...");
@@ -238,36 +220,23 @@ void loop() {
   }
 }
 
-// Trot gait implementation
 void trotGait(int direction, float speed) {
-  // Validate parameters
   direction = constrain(direction, 0, 3);
   speed = constrain(speed, 0.1, 1.0);
-  
   unsigned long startTime = millis();
   const int phaseDuration = GAIT_CYCLE * speed;
-  
   addLog("Starting gait: Direction=" + String(direction) + " Speed=" + String(speed, 2));
-  
   while(millis() - startTime < phaseDuration) {
     float t = ((millis() - startTime) % GAIT_CYCLE) / (float)GAIT_CYCLE;
-    
-    // Diagonal leg group 1 (RF + LB)
     moveLeg(RF_HIP, RF_KNEE, t, direction);
     moveLeg(LB_HIP, LB_KNEE, t, direction);
-    
-    // Diagonal leg group 2 (LF + RB)
     moveLeg(LF_HIP, LF_KNEE, t + 0.5, direction);
     moveLeg(RB_HIP, RB_KNEE, t + 0.5, direction);
-    
-    delay(20); // Control refresh rate
+    delay(20); 
   }
-  
-  // Smooth transition back to neutral position
   for(int i = 8; i <= 15; i++) {
-    smoothMove(i, 90, 300); // 300ms transition
+    smoothMove(i, 90, 300); 
   }
-  
   addLog("Gait completed");
 }
 
