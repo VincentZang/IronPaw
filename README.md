@@ -1,123 +1,293 @@
-# 智能四足机器人项目
-ESP32-S3驱动的语音交互运动控制平台
+# Smart Quadruped Robot
 
-## 项目简介
-这是一个基于ESP32-S3微控制器的智能四足机器人系统，结合了语音识别、运动控制和云端AI交互功能。核心功能包括：
-- **语音指令识别**：支持本地动作命令（如“前进”、“转向”）和云端对话（通过DeepSeek API）。
-- **四足对角步态运动**：使用8个SG90舵机实现稳定行走。
-- **实时反馈**：通过百度TTS生成语音响应，提供自然对话体验。
-技术亮点包括低延迟I2S音频流水线、舵机逆运动学实时解算，以及双级指令处理（本地动作库 + 云端AI），详见摘要文档。
+*ESP32-S3 powered voice-controlled quadruped robot with AI interaction*
 
-## 功能特性
-- **核心功能**:
-  - 语音指令识别（步态运动/问答）。
-  - 四足对角步态运动控制。
-  - DeepSeek API对话 + 百度TTS语音反馈。
-- **技术亮点**:
-  - 低延迟I2S音频流水线（INMP441麦克风 + MAX98357功放）。
-  - 舵机逆运动学实时解算。
-  - 双级指令处理：本地动作库优先处理运动命令，云端AI处理复杂对话。
-  - 内存保护机制（PSRAM优化和紧急恢复）。
+## Overview
+This project implements a smart quadruped robot using the ESP32-S3 microcontroller. Combining voice recognition, motion control, and cloud-based AI interaction, it features:
 
-## 硬件要求
-项目所需材料清单:
-- **主控制器**: 1 × ESP32-S3（带WiFi/BLE）。
-- **舵机模块**: 8 × SG90舵机（用于髋关节和膝关节）。
-- **音频模块**: 
-  - 1 × INMP441麦克风（高精度输入）。
-  - 1 × MAX98357数字功放。
-  - 1 × 2308 8Ω 1W喇叭。
-- **电源模块**: 
-  - 1 × XL4015降压模块（5V/2A输出）。
-  - 1 × SS-12F17G5开关。
-  - 6 × BENYANG七号电池组 + 1 × 电池仓。
-- **其他**: 
-  - 1 × PCA9685舵机驱动模块。
-  - 1 × 1.3寸屏幕（可选，用于调试）。
+- **Voice command recognition** for motion control and conversation
+- **Quadruped trot gait locomotion** using inverse kinematics
+- **AI-powered dialogue system** with DeepSeek API
+- **Natural voice feedback** via Baidu TTS
+- **Memory-optimized architecture** with PSRAM support
 
+The system prioritizes low-latency audio processing and responsive motion control while maintaining a friendly interaction style. The robot can walk, turn, dance, and answer questions using natural language.
 
-**引脚连接摘要**:
-- **INMP441麦克风**: WS → GPIO 41, SCK → GPIO 42, SD → GPIO 4, GND → G, VDD → 3V3.
-- **PCA9685模块**: SCL → GPIO 16, SDA → GPIO 17, VCC → 3V3, GND → G.
-- **MAX98357功放**: LRC → GPIO 15, BLCK → GPIO 14, DIN → GPIO 13, Vin → 3V3, GND → G.
-- **XL4015电源**: Out- → G (ESP32-S3和PCA9685), Out+ → 5V (ESP32-S3和PCA9685), IN+ → Fuse → 电池正极, IN- → 电池负极.
-- **开关**: Com → 电池正极, No → IN+ (XL4015).
+## Features
+- **Voice Interaction**
+  - Wake-word activation via physical button
+  - Local preset command recognition ("forward", "turn left", "dance")
+  - Cloud-based AI conversation handling
+  - Natural speech synthesis with emotional tones
+- **Motion System**
+  - Real-time inverse kinematics calculations
+  - Configurable trot gait parameters
+  - Smooth servo motion transitions
+  - Safety position reset
+- **System Management**
+  - Dual-level memory protection (heap + PSRAM)
+  - Automatic storage cleanup
+  - Hardware monitoring and emergency recovery
+  - Over-the-air debugging via serial interface
 
-## 软件依赖
-- **核心库**:
-  - Arduino框架（ESP32-S3兼容）。
-  - 库依赖: `WiFi.h`, `HTTPClient.h`, `ArduinoJson.h`, `driver/i2s.h`, `SPIFFS.h`, `Adafruit_PWMServoDriver.h`.
-- **外部API**:
-  - **DeepSeek API**: 用于AI对话（需API key，见摘要文档）。
-  - **百度云API**: 用于语音识别（ASR）和语音合成（TTS），首次开通赠送额度（见摘要文档）。
-- **开发环境**: Arduino IDE 或 PlatformIO，配置为ESP32-S3板型。
+## Hardware Requirements
+- **Main Controller**: ESP32-S3 (with PSRAM)
+- **Motion System**:
+  - 8× SG90 servos (hip + knee joints)
+  - PCA9685 servo driver module
+- **Audio System**:
+  - INMP441 microphone
+  - MAX98357 I2S amplifier
+  - 8Ω 1W speaker
+- **Power System**:
+  - XL4015 buck converter (5V/2A output)
+  - 6× AA battery pack
+  - Power switch
+- **Connectivity**:
+  - WiFi access (for cloud services)
+- **Optional**: 1.3" display for debugging
 
-## 安装指南
-1. **硬件烧录**:
-   - 连接所有硬件组件。
-   - 使用Arduino IDE烧录代码。
-2. **密钥配置**:
-   - 创建DeepSeek API key（访问[DeepSeek官网](https://deepseek.com)，充值后获取key，详情按照摘要文档）。
-   - 创建百度云应用，获取API key和Secret key（首次开通赠送ASR/TTS额度）。
-   - 在代码中更新密钥（文件`daima/your_code.ino`，查找`deepseekApiKey`和`baiduApiKey`变量）。
-3. **系统初始化**:
-   - 上电后，系统自动连接WiFi（SSID和密码在代码中配置）。
-   - 等待NTP时间同步和百度Token获取（日志输出确认状态）。
-   - 测试音播放表示硬件工作正常（基于文档2的`playTestTone()`函数）。
-4. **文件系统**:
-   - SPIFFS用于存储录音文件（`/recording.pcm`），代码包含智能清理算法。
+**Pin Connections**:
+| Module | Connection | ESP32-S3 Pin |
+|--------|------------|--------------|
+| INMP441 | WS | GPIO 41 |
+| | SCK | GPIO 42 |
+| | SD | GPIO 4 |
+| PCA9685 | SDA | GPIO 17 |
+| | SCL | GPIO 16 |
+| MAX98357 | LRC | GPIO 15 |
+| | BCLK | GPIO 14 |
+| | DIN | GPIO 13 |
+| Wake Button | Signal | GPIO 0 |
 
-## 使用说明
-交互流程基于文档3的口述代码流程：
-1. **唤醒机器人**:
-   - 按下唤醒按钮（GPIO 0），系统开始录音（3秒时长）。
-   - 语音指令被发送到百度ASR进行识别。
-2. **指令处理**:
-   - **本地动作命令**（如“前进”、“跳舞”）: 执行预编程步态（函数`trotGait()`）。
-     - 示例: 说“前进” → 机器人行走并回复“正在前进啦~”。
-   - **对话指令**（如“你好吗”): 优先匹配预设库，否则调用DeepSeek API。
-     - 预设库包括常见问答。
-     - DeepSeek回复通过百度TTS合成语音播放。
-3. **示例命令**:
-   - 运动指令: “左转”、“后退”、“停止”。
-   - 对话指令: “你叫什么名字？” → 回复“我是您的语音助手”。
-   - 时间查询: “现在几点？” → 动态回复当前时间。
-4. **串口调试**:
-   - 使用串口监视器发送命令（基于文档2的`handleSerialCommands()`）:
-     - `cache.list`: 列出缓存响应。
-     - `preset.list`: 列出预设问答。
-     - `addpreset|问题|答案`: 添加新预设。
-     - `restart`: 重启系统。
-
-## 代码结构概述
-代码文件在`Main`目录中（参考文档2）：
-- **核心文件**: `Main.ino`（主程序）。
-- **关键函数**:
-  - `setup()`: 初始化硬件（I2S、SPIFFS、WiFi）。
-  - `loop()`: 处理唤醒按钮和WiFi重连。
-  - `wakeUpAssistant()`: 触发录音和指令处理。
-  - `processVoiceCommand()`: 解析指令并执行动作或调用API。
-  - `trotGait()`: 实现对角步态运动控制。
-  - `callDeepSeekAPI()`和`httpTTS()`: 处理云端交互。
-- **内存优化**: 使用PSRAM（函数`setupMemoryMonitor()`），支持紧急恢复。
-- **文件**: SPIFFS管理录音文件（函数`recordAudio()`和`maintainStorage()`）。
-
-## 贡献指南
-欢迎贡献代码或改进项目：
-1. Fork仓库并创建新分支。
-2. 提交Pull Request，描述变更（如优化运动算法或添加新功能）。
-3. 测试要求: 使用文档2的串口命令验证功能（如`free`检查内存）。
-4. 问题报告: 在GitHub Issues中描述问题，附上日志输出。
-
-## 许可证
-项目遵循MIT许可证：
-- **版权归属**: © 2025 Herui Zang。
-- **授权细节**: 允许自由使用、修改和分发，需保留版权声明。详情见[LICENSE](LICENSE)文件。
-
-## 致谢
-- **资源引用**:
-  - DeepSeek API提供AI对话服务。
-  - 百度云API支持语音识别和合成。
-  - Arduino社区和ESP32库。
+<img width="415" height="416" alt="image" src="https://github.com/user-attachments/assets/e7c271c3-877c-4a1c-93bf-65090ee36e4a" />
 
 
+## Software Setup
+1. **Development Environment**:
+   - Arduino IDE 2.0+ or PlatformIO
+   - ESP32 Arduino Core (supporting ESP32-S3)
+
+2. **Required Libraries**:
+<img width="522" height="393" alt="image" src="https://github.com/user-attachments/assets/dca71764-300a-44a7-9fa0-d9ef776c7922" />
+
+3. **API Configuration**:
+- Obtain DeepSeek API key from [DeepSeek Platform](https://platform.deepseek.com/)
+- Create Baidu Cloud application for ASR/TTS at [Baidu AI Studio](https://ai.baidu.com/)
+- Update credentials in code:
+  <img width="742" height="164" alt="image" src="https://github.com/user-attachments/assets/5e622055-f578-45a1-b974-e094c4d4cc64" />
+
+## Installation
+1. **Hardware Assembly**:
+- Mount servos on robot chassis
+- Connect all electronic components as per pinout table
+- Secure battery pack and power modules
+
+2. **Firmware Upload**:
+- Connect ESP32-S3 via USB
+- Select board: `ESP32S3 Dev Module`
+- Select appropriate USB port
+- Compile and upload code
+
+3. **Initial Setup**:
+- Power on the robot
+- System will automatically:
+  - Initialize file system (SPIFFS)
+  - Connect to WiFi
+  - Obtain Baidu access token
+  - Sync with NTP time server
+- Successful initialization confirmed by test tone
+
+## Usage
+### Basic Operation
+1. **Wake the robot**: Press the wake button (GPIO 0)
+2. **Speak command**: Wait for beep, then speak within 3 seconds
+3. **Receive response**: Robot will execute action or verbal response
+
+### Voice Commands
+| Command Type | Examples | Robot Response |
+|--------------|----------|---------------|
+| **Motion** | "前进" (Forward) | Executes forward gait |
+|  | "左转" (Turn left) | Turns left |
+|  | "跳舞" (Dance) | Performs dance sequence |
+| **Information** | "现在几点" (What time is it?) | Speaks current time |
+|  | "你叫什么名字" (What's your name?) | "我是您的语音助手" (I'm your voice assistant) |
+| **Conversation** | "讲个笑话" (Tell a joke) | Uses DeepSeek API for response |
+
+<img width="448" height="204" alt="image" src="https://github.com/user-attachments/assets/9b251093-0ff3-47fb-8728-26bf5a957789" />
+
+
+### Serial Debugging
+Access via 115200 baud serial monitor:
+
+// Handle serial commands
+void handleSerialCommands() {
+  if(Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    
+    if(command == "restart") {
+      addLog("Received restart command");
+      ESP.restart();
+    } 
+    else if(command == "cache.list") {
+      Serial.println("==== Cache List ====");
+      for(const auto& entry : responseCache) {
+        Serial.print(entry.first + " -> ");
+        for(const String& response : entry.second) {
+          Serial.print(response + " | ");
+        }
+        Serial.println();
+      }
+      Serial.println("====================");
+    } 
+    else if(command == "preset.list") {
+      Serial.println("==== Preset Responses ====");
+      for(const auto& entry : presetResponses) {
+        Serial.println(entry.first + " -> " + entry.second);
+      }
+      Serial.println("========================");
+    } 
+    else if(command == "free") {
+      size_t free_psram = 0;
+      if(psramFound()) {
+        free_psram = ESP.getFreePsram();
+      }
+      Serial.printf("Memory Status: Heap:%d, PSRAM:%d\n", 
+                   esp_get_free_heap_size(), free_psram);
+    }
+    else if(command.startsWith("addpreset")) {
+      // Format: addpreset|question|answer
+      int firstPipe = command.indexOf('|');
+      int secondPipe = command.indexOf('|', firstPipe + 1);
+      
+      if(firstPipe > 0 && secondPipe > firstPipe) {
+        String question = command.substring(firstPipe + 1, secondPipe);
+        String answer = command.substring(secondPipe + 1);
+        
+        // Update preset library
+        const_cast<std::map<String, String>&>(presetResponses)[question] = answer;
+        Serial.println("Added preset: " + question + " -> " + answer);
+      } else {
+        Serial.println("Error: Invalid format. Use: addpreset|question|answer");
+      }
+    }
+    else {
+      Serial.println("Unknown command");
+    }
+  }
+}
+
+// Helper function to add log entries
+void addLog(String message) {
+  String timestamp = getFormattedTime();
+  systemLog += "[" + timestamp + "] " + message + "\n";
+  Serial.println("[" + timestamp + "] " + message);
+}
+
+## Code Structure
+Key components in `Main.ino`:
+
+// Initialization
+void setup() {
+  // Set CPU frequency
+  setCpuFrequencyMhz(240);
+  
+  // Initialize serial communication
+  Serial.begin(115200);
+  while(!Serial) delay(10);
+  
+  // Create I2S mutex
+  i2sMutex = xSemaphoreCreateMutex();
+  
+  // Initialize file system
+  if(!SPIFFS.begin(true)) {
+    addLog("SPIFFS initialization failed!");
+    // Attempt repair
+    SPIFFS.format();
+    if(!SPIFFS.begin(true)) {
+      addLog("SPIFFS repair failed, system halted");
+      while(1);
+    }
+  }
+  
+  // Initialize hardware
+  setupServos();
+  initializeSystem();
+  
+  // Start memory monitor task
+  xTaskCreatePinnedToCore(memoryMonitorTask, "MemoryMonitor", 3000, nullptr, 1, nullptr, 0);
+}
+
+// Main loop
+void loop() {
+  handleSerialCommands();
+  
+  // Check wake button
+  if(isReady && !isProcessing && digitalRead(wakeButtonPin) == LOW) {
+    wakeUpAssistant();
+    delay(300); // Debounce
+  }
+  
+  // WiFi reconnect mechanism
+  if(WiFi.status() != WL_CONNECTED) {
+    if(millis() - wifiConnectStartTime > 30000) {
+      addLog("WiFi disconnected, attempting reconnect...");
+      initializeSystem();
+    }
+  }
+}
+
+// Trot gait implementation
+void trotGait(int direction, float speed) {
+  // Validate parameters
+  direction = constrain(direction, 0, 3);
+  speed = constrain(speed, 0.1, 1.0);
+  
+  unsigned long startTime = millis();
+  const int phaseDuration = GAIT_CYCLE * speed;
+  
+  addLog("Starting gait: Direction=" + String(direction) + " Speed=" + String(speed, 2));
+  
+  while(millis() - startTime < phaseDuration) {
+    float t = ((millis() - startTime) % GAIT_CYCLE) / (float)GAIT_CYCLE;
+    
+    // Diagonal leg group 1 (RF + LB)
+    moveLeg(RF_HIP, RF_KNEE, t, direction);
+    moveLeg(LB_HIP, LB_KNEE, t, direction);
+    
+    // Diagonal leg group 2 (LF + RB)
+    moveLeg(LF_HIP, LF_KNEE, t + 0.5, direction);
+    moveLeg(RB_HIP, RB_KNEE, t + 0.5, direction);
+    
+    delay(20); // Control refresh rate
+  }
+  
+  // Smooth transition back to neutral position
+  for(int i = 8; i <= 15; i++) {
+    smoothMove(i, 90, 300); // 300ms transition
+  }
+  
+  addLog("Gait completed");
+}
+
+## Contributing
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/new-feature`)
+3. Commit changes (`git commit -am 'Add new feature'`)
+4. Push to branch (`git push origin feature/new-feature`)
+5. Submit pull request
+
+**Testing requirements**:
+- Verify memory usage with `free` command
+- Check gait stability at different speeds
+- Validate voice recognition accuracy
+
+## License
+Distributed under the MIT License. See `LICENSE` for full text.
+
+## Acknowledgements
+- [DeepSeek](https://deepseek.com) for conversational AI API
+- Baidu Cloud for speech processing services
+- Arduino and ESP32 communities for hardware libraries
+- Contributors and beta testers
