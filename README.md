@@ -16,7 +16,7 @@ Meet "Iron Claw (Tie Zhua)" - an expressive quadruped robot that understands you
 
 ### 🗣️ Speech Characteristics
 - Uses informal, friendly language ("Hey! What's up today?")
-- Adds playful suffixes ("~", "oh~", Ah~") to sound natural
+- Adds playful suffixes ("~", "Okay~", En~") to sound natural
 - Short responses (under 25 characters) for immediacy
 - Self-deprecating humor ("My camera resolution is too low to see")
 - Onomatopoeia for expressions ("Zzz" when sleeping)
