@@ -1,263 +1,191 @@
-# Voice-activated-four-legged-robot
+# ESP32-S3 Interactive Quadruped Robot
 
-*ESP32-S3 powered voice-controlled quadruped robot with AI interaction*
+ *Replace with actual robot video/gif*
 
-## Overview
-This project implements a smart quadruped robot using the ESP32-S3 microcontroller. Combining voice recognition, motion control, and cloud-based AI interaction, it features:
+Meet "Iron Claw (Tie Zhua)" - an expressive quadruped robot that understands your voice, responds with personality, and moves with lifelike grace. Built on ESP32-S3, this open-source companion features:
 
-- **Voice command recognition** for motion control and conversation
-- **Quadruped trot gait locomotion** using inverse kinematics
-- **AI-powered dialogue system** with DeepSeek API
-- **Natural voice feedback** via Baidu TTS
-- **Memory-optimized architecture** with PSRAM support
+- 🎙️ Natural voice interaction in Chinese
+- 👀 Emotive OLED eyes showing 6 emotional states
+- 🦵 Biomimetic quadruped locomotion
+- 🤖 Playful personality with contextual responses
+- 🧠 Hybrid AI (local + cloud processing)
 
-The system prioritizes low-latency audio processing and responsive motion control while maintaining a friendly interaction style. The robot can walk, turn, dance, and answer questions using natural language.
+## 🌟 Character Personality & Behaviors
 
-## Features
-- **Voice Interaction**
-  - Wake-word activation via physical button
-  - Local preset command recognition ("forward", "turn left", "dance")
-  - Cloud-based AI conversation handling
-  - Natural speech synthesis with emotional tones
-- **Motion System**
-  - Real-time inverse kinematics calculations
-  - Configurable trot gait parameters
-  - Smooth servo motion transitions
-  - Safety position reset
-- **System Management**
-  - Dual-level memory protection (heap + PSRAM)
-  - Automatic storage cleanup
-  - Hardware monitoring and emergency recovery
-  - Over-the-air debugging via serial interface
+"Iron Claw" is designed with a distinct personality that makes interactions feel natural and engaging:
 
-## Hardware Requirements
-- **Main Controller**: ESP32-S3 (with PSRAM)
-- **Motion System**:
-  - 8× SG90 servos (hip + knee joints)
-  - PCA9685 servo driver module
-- **Audio System**:
-  - INMP441 microphone
-  - MAX98357 I2S amplifier
-  - 8Ω 1W speaker
-- **Power System**:
-  - XL4015 buck converter (5V/2A output)
-  - 6× AA battery pack
-  - Power switch
-- **Connectivity**:
-  - WiFi access (for cloud services)
-- **Optional**: 1.3" display for debugging
+### 🗣️ Speech Characteristics
+- Uses informal, friendly language ("Hey! What's up today?")
+- Adds playful suffixes ("~", "oh~", Ah~") to sound natural
+- Short responses (under 25 characters) for immediacy
+- Self-deprecating humor ("My camera resolution is too low to see")
+- Onomatopoeia for expressions ("Zzz" when sleeping)
 
-**Pin Connections**:
-| Module | Connection | ESP32-S3 Pin |
-|--------|------------|--------------|
-| INMP441 | WS | GPIO 41 |
-| | SCK | GPIO 42 |
-| | SD | GPIO 4 |
-| PCA9685 | SDA | GPIO 17 |
-| | SCL | GPIO 16 |
-| MAX98357 | LRC | GPIO 15 |
-| | BCLK | GPIO 14 |
-| | DIN | GPIO 13 |
-| Wake Button | Signal | GPIO 0 |
+### 👁️ Eye Expressions
+| State | Behavior | Trigger |
+|-------|----------|---------|
+| **Idle** | Slow blinks, random eye movements | Default state |
+| **Listening** | Wide open eyes, quick micro-blinks | Voice detected |
+| **Thinking** | Rapid side-to-side eye movements | Processing query |
+| **Moving** | Focused "squint", follows direction | During locomotion |
+| **Happy** | Upward-curved "smiling" eyes | After praise or dancing |
+| **Sleeping** | Closed eyes with "Zzz" animation | 30s inactivity |
 
-<img width="415" height="416" alt="image" src="https://github.com/user-attachments/assets/e7c271c3-877c-4a1c-93bf-65090ee36e4a" />
+### 🐾 Movement Personality
+- Adds small random variations to steps for naturalness
+- Dances when praised ("Want to see another dance?")
+- Tilts head slightly when confused
+- Smooth transitions between positions
+- "Stretches" after long idle periods
 
+## 🧠 Intelligent Interaction Pipeline
 
-## Software Setup
-1. **Development Environment**:
-   - Arduino IDE 2.0+ or PlatformIO
-   - ESP32 Arduino Core (supporting ESP32-S3)
+The robot processes interactions through a sophisticated decision pipeline:
 
-2. **Required Libraries**:
-<img width="522" height="393" alt="image" src="https://github.com/user-attachments/assets/dca71764-300a-44a7-9fa0-d9ef776c7922" />
+### 1. Voice Capture & Processing
 
-3. **API Configuration**:
-- Obtain DeepSeek API key from [DeepSeek Platform](https://platform.deepseek.com/)
-- Create Baidu Cloud application for ASR/TTS at [Baidu AI Studio](https://ai.baidu.com/)
-- Update credentials in code:
-  <img width="742" height="164" alt="image" src="https://github.com/user-attachments/assets/5e622055-f578-45a1-b974-e094c4d4cc64" />
+```mermaid
 
-## Installation
-1. **Hardware Assembly**:
-- Mount servos on robot chassis
-- Connect all electronic components as per pinout table
-- Secure battery pack and power modules
+graph TD
+A[Microphone] --> B{Ambient Noise Analysis}
+B -->|Quiet Environment| C[High Sensitivity Mode]
+B -->|Noisy Environment| D[Adaptive Threshold Mode]
+C --> E[Voice Activity Detection]
+D --> E
+E --> F[3s Audio Capture]
+F --> G[Baidu ASR]
 
-2. **Firmware Upload**:
-- Connect ESP32-S3 via USB
-- Select board: `ESP32S3 Dev Module`
-- Select appropriate USB port
-- Compile and upload code
-
-3. **Initial Setup**:
-- Power on the robot
-- System will automatically:
-  - Initialize file system (SPIFFS)
-  - Connect to WiFi
-  - Obtain Baidu access token
-  - Sync with NTP time server
-- Successful initialization confirmed by test tone
-
-## Usage
-### Basic Operation
-1. **Wake the robot**: Press the wake button (GPIO 0)
-2. **Speak command**: Wait for beep, then speak within 3 seconds
-3. **Receive response**: Robot will execute action or verbal response
-
-### Voice Commands
-| Command Type | Examples | Robot Response |
-|--------------|----------|---------------|
-| **Motion** | "前进" (Forward) | Executes forward gait |
-|  | "左转" (Turn left) | Turns left |
-|  | "跳舞" (Dance) | Performs dance sequence |
-| **Information** | "现在几点" (What time is it?) | Speaks current time |
-|  | "你叫什么名字" (What's your name?) | "我是您的语音助手" (I'm your voice assistant) |
-| **Conversation** | "讲个笑话" (Tell a joke) | Uses DeepSeek API for response |
-
-<img width="448" height="204" alt="image" src="https://github.com/user-attachments/assets/9b251093-0ff3-47fb-8728-26bf5a957789" />
-
-
-### Serial Debugging
-Access via 115200 baud serial monitor:
-
-```cpp
-void handleSerialCommands() {
-  if(Serial.available()) {
-    String command = Serial.readStringUntil('\n');
-    command.trim();
-    
-    if(command == "restart") {
-      addLog("Received restart command");
-      ESP.restart();
-    } 
-    else if(command == "cache.list") {
-      Serial.println("==== Cache List ====");
-      for(const auto& entry : responseCache) {
-        Serial.print(entry.first + " -> ");
-        for(const String& response : entry.second) {
-          Serial.print(response + " | ");
-        }
-        Serial.println();
-      }
-      Serial.println("====================");
-    } 
-    else if(command == "preset.list") {
-      Serial.println("==== Preset Responses ====");
-      for(const auto& entry : presetResponses) {
-        Serial.println(entry.first + " -> " + entry.second);
-      }
-      Serial.println("========================");
-    } 
-    else if(command == "free") {
-      size_t free_psram = 0;
-      if(psramFound()) {
-        free_psram = ESP.getFreePsram();
-      }
-      Serial.printf("Memory Status: Heap:%d, PSRAM:%d\n", 
-                   esp_get_free_heap_size(), free_psram);
-    }
-    else if(command.startsWith("addpreset")) {
-      // Format: addpreset|question|answer
-      int firstPipe = command.indexOf('|');
-      int secondPipe = command.indexOf('|', firstPipe + 1);
-      
-      if(firstPipe > 0 && secondPipe > firstPipe) {
-        String question = command.substring(firstPipe + 1, secondPipe);
-        String answer = command.substring(secondPipe + 1);
-        
-        // Update preset library
-        const_cast<std::map<String, String>&>(presetResponses)[question] = answer;
-        Serial.println("Added preset: " + question + " -> " + answer);
-      } else {
-        Serial.println("Error: Invalid format. Use: addpreset|question|answer");
-      }
-    }
-    else {
-      Serial.println("Unknown command");
-    }
-  }
-}
-void addLog(String message) {
-  String timestamp = getFormattedTime();
-  systemLog += "[" + timestamp + "] " + message + "\n";
-  Serial.println("[" + timestamp + "] " + message);
-}
 ```
 
-## Code Structure
-Key components in `MainCodeChineseVersion.ino` and `MainCodeEnglishVersion.ino`:
-```cpp
-void setup() {
-  setCpuFrequencyMhz(240);
-  Serial.begin(115200);
-  while(!Serial) delay(10);
-  i2sMutex = xSemaphoreCreateMutex();
-  if(!SPIFFS.begin(true)) {
-    addLog("SPIFFS initialization failed!");
-    // Attempt repair
-    SPIFFS.format();
-    if(!SPIFFS.begin(true)) {
-      addLog("SPIFFS repair failed, system halted");
-      while(1);
-    }
-  }
-  setupServos();
-  initializeSystem();
-  xTaskCreatePinnedToCore(memoryMonitorTask, "MemoryMonitor", 3000, nullptr, 1, nullptr, 0);
-}
+**Key Innovations:**
+- **Environmental Adaptation**: Automatically adjusts sensitivity based on ambient noise levels
+- **Pre-buffering**: Captures 0.5s of audio before voice detection to catch quick commands
+- **Intelligent Filtering**: Ignores invalid inputs like "I don't know" or background noise
 
-void loop() {
-  handleSerialCommands();
-  if(isReady && !isProcessing && digitalRead(wakeButtonPin) == LOW) {
-    wakeUpAssistant();
-    delay(300); // Debounce
-  }
-  if(WiFi.status() != WL_CONNECTED) {
-    if(millis() - wifiConnectStartTime > 30000) {
-      addLog("WiFi disconnected, attempting reconnect...");
-      initializeSystem();
-    }
-  }
-}
+### 2. Understanding & Response Generation
 
-void trotGait(int direction, float speed) {
-  direction = constrain(direction, 0, 3);
-  speed = constrain(speed, 0.1, 1.0);
-  unsigned long startTime = millis();
-  const int phaseDuration = GAIT_CYCLE * speed;
-  addLog("Starting gait: Direction=" + String(direction) + " Speed=" + String(speed, 2));
-  while(millis() - startTime < phaseDuration) {
-    float t = ((millis() - startTime) % GAIT_CYCLE) / (float)GAIT_CYCLE;
-    moveLeg(RF_HIP, RF_KNEE, t, direction);
-    moveLeg(LB_HIP, LB_KNEE, t, direction);
-    moveLeg(LF_HIP, LF_KNEE, t + 0.5, direction);
-    moveLeg(RB_HIP, RB_KNEE, t + 0.5, direction);
-    delay(20); 
-  }
-  for(int i = 8; i <= 15; i++) {
-    smoothMove(i, 90, 300); 
-  }
-  addLog("Gait completed");
-}
+#### Decision Hierarchy:
+1. **Immediate Actions** (time, date): 
+   - "What time is it?" → Speaks current time immediately
+   
+2. **Predefined Interactions** (16 personality-driven Q&As):
+   - "What's your name?" → "They call me Iron Claw! (*^∇^*)"
+   - "Thank you" → "No problem! Want me to spin happily?"
+   
+3. **Movement Commands**: 
+   - Understands variations: "Move forward", "Go left", "Turn right a little"
+   
+4. **Cloud AI** (DeepSeek API) for complex questions:
+   - "Tell me a joke" → "Why don't robots go to the gym? They're afraid of software updates!"
+
+**Context Preservation:**
+- Maintains conversation context through interaction cycles
+- Remembers recent topics for follow-up questions
+- Learns frequent responses for faster replies
+
+### 3. Physical Response Execution
+
+#### Movement Intelligence:
+- **Direction Handling**: Understands 4 directions with natural language variations
+- **Distance Estimation**: Interprets relative distances:
+  - "A little" = 2cm ± random variation
+  - "Some" = 5cm ± variation
+  - "A lot" = 15cm ± variation
+  
+- **Gait Control**:
+  - Diagonal gait pattern for stability
+  - Swing phase (foot lifting) vs support phase (pushing)
+  - Automatic leg coordination
+
+**Natural Motion Features:**
+- Acceleration-limited movements
+- Error recovery from stumbles
+- Energy-saving posture when idle
+
+## ⚙️ System Architecture
+
+### Hardware Components
+| Component | Function | Key Specs |
+|----------|----------|-----------|
+| **ESP32-S3** | Main processor | Dual-core 240MHz, 512KB SRAM |
+| **INMP441** | Voice input | Omnidirectional MEMS mic |
+| **MAX98357** | Audio output | 3.2W Class D amplifier |
+| **OLED Display** | Expressive eyes | 128x64 resolution |
+| **PCA9685** | Servo control | 16-channel PWM controller |
+| **MG90S Servos** (x8) | Leg movement | 180° rotation, 2.2kg/cm torque |
+
+### Software Architecture
+```mermaid
+graph TB
+
+subgraph Main Systems
+
+A[Voice Processing] --> B[Interaction Manager]
+
+B --> C[Expression System]
+
+B --> D[Locomotion Engine]
+
+end
+
+subgraph Support Systems
+
+E[WiFi Manager] --> F[Time Sync]
+
+G[Resource Monitor] --> H[Memory Protection]
+
+I[Storage Manager] --> J[Response Cache]
+
+end
+
+A <--> E
+
+B <--> I
+
+D <--> G
 ```
+**Key Features:**
+- **Hybrid Processing**: Balances local/cloud computation
+- **Self-Preservation**: Auto-reboots on critical failures
+- **Connection Resilience**: Automatic WiFi reconnection
+- **Energy Awareness**: CPU frequency scaling during idle
 
-## Contributing
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/new-feature`)
-3. Commit changes (`git commit -am 'Add new feature'`)
-4. Push to branch (`git push origin feature/new-feature`)
-5. Submit pull request
+## 🚀 Getting Started
 
-**Testing requirements**:
-- Verify memory usage with `free` command
-- Check gait stability at different speeds
-- Validate voice recognition accuracy
+### Hardware Setup
+1. Connect servos using standard quadruped configuration
+2. Wire I2S components for audio input/output
+3. Connect OLED display via I2C interface
 
-## License
-Distributed under the MIT License. See `LICENSE` for full text.
+### Initial Configuration
+```cpp
 
-## Acknowledgements
-- [DeepSeek](https://deepseek.com) for conversational AI API
-- Baidu Cloud for speech processing services
-- Arduino and ESP32 communities for hardware libraries
-- Contributors and beta testers
+// Configurations (config.h)
+
+const char* ssid = "YOUR_WIFI";
+
+const char* password = "YOUR_PASSWORD";
+
+const char* deepseekApiKey = "YOUR_DEEPSEEK_KEY";
+```
+### First Run
+1. Upload firmware via PlatformIO
+2. Robot will:
+   - Initialize servos to neutral position
+   - Connect to WiFi
+   - Synchronize internet time
+   - Play startup chime
+3. Press wake button to start interaction
+
+### Calibration Commands
+```bash
+
+Serial commands
+eye.listening # Force listening expression
+
+servo.test # Test servo range
+
+gait.calibrate # Enter gait calibration
+```
+## 📜 License
+MIT Licensed - See [LICENSE](LICENSE) for details.
